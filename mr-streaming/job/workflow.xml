@@ -1,0 +1,40 @@
+<workflow-app xmlns ="uri:oozie:workflow:0.4" name="mr-streaming-wf">
+    <start to="mr-streaming"/>
+
+    <action name="mr-streaming">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${outputDir}"/>
+            </prepare>
+            <streaming>
+                <mapper>word-mapper.py</mapper>
+                <reducer>word-reducer.py</reducer>
+            </streaming>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+                <property>
+                    <name>mapred.input.dir</name>
+                    <value>data/count_of_monte_cristo</value>
+                </property>
+                <property>
+                    <name>mapred.output.dir</name>
+                    <value>${outputDir}</value>
+                </property>
+            </configuration>
+            <file>streaming/wordcount/word-mapper.py#word-mapper.py</file>
+            <file>streaming/wordcount/word-reducer.py#word-reducer.py</file>
+        </map-reduce>
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+
+   <kill name="fail">
+      <message>Map/Reduce failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+   </kill>
+   <end name="end"/>
+</workflow-app>
